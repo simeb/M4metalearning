@@ -60,61 +60,79 @@ mase_cal <- function(insample, outsample, forecasts) {
 ##-#'   }
 
 #' @export
-calc_errors <- function(dataset) {
+# calc_errors <- function(dataset) {
+# 
+#   total_snaive_errors <- c(0,0)
+#   for (i in 1:length(dataset)) {
+#     tryCatch({
+#     lentry <- dataset[[i]]
+#     insample <- lentry$x
+# 
+#     #extrac forecasts and attach the snaive for completion
+#     ff <- lentry$ff
+#     ff <- rbind(ff, snaive_forec(insample, lentry$h))
+# 
+#     frq <- frq <- stats::frequency(insample)
+#     insample <- as.numeric(insample)
+#     outsample <- as.numeric(lentry$xx)
+#     masep <- mean(abs(utils::head(insample,-frq) - utils::tail(insample,-frq)))
+# 
+# 
+#     repoutsample <- matrix(
+#       rep(outsample, each=nrow(ff)),
+#       nrow=nrow(ff))
+# 
+#     smape_err <- 200*abs(ff - repoutsample) / (abs(ff) + abs(repoutsample))
+# 
+#     mase_err <- abs(ff - repoutsample) / masep
+# 
+#     lentry$snaive_mase <- mase_err[nrow(mase_err), ]
+#     lentry$snaive_smape <- smape_err[nrow(smape_err),]
+# 
+#     lentry$mase_err <- mase_err[-nrow(mase_err),]
+#     lentry$smape_err <- smape_err[-nrow(smape_err),]
+#     dataset[[i]] <- lentry
+#     total_snaive_errors <- total_snaive_errors + c(mean(lentry$snaive_mase),
+#                                                    mean(lentry$snaive_smape))
+#     } , error = function (e) {
+#       print(paste("Error when processing OWIs in series: ", i))
+#       print(e)
+#       e
+#     })
+#   }
+#   total_snaive_errors = total_snaive_errors / length(dataset)
+#   avg_snaive_errors <- list(avg_mase=total_snaive_errors[1],
+#                             avg_smape=total_snaive_errors[2])
+# 
+# 
+#   for (i in 1:length(dataset)) {
+#     lentry <- dataset[[i]]
+#     dataset[[i]]$errors <- 0.5*(rowMeans(lentry$mase_err)/avg_snaive_errors$avg_mase +
+#                                   rowMeans(lentry$smape_err)/avg_snaive_errors$avg_smape)
+#     #dataset[[i]]$errors <- rowMeans(lentry$smape_err)
+#   }
+#   attr(dataset, "avg_snaive_errors") <- avg_snaive_errors
+#   dataset
+# }
 
-  total_snaive_errors <- c(0,0)
-  for (i in 1:length(dataset)) {
-    tryCatch({
-    lentry <- dataset[[i]]
-    insample <- lentry$x
-
-    #extrac forecasts and attach the snaive for completion
-    ff <- lentry$ff
-    ff <- rbind(ff, snaive_forec(insample, lentry$h))
-
-    frq <- frq <- stats::frequency(insample)
-    insample <- as.numeric(insample)
-    outsample <- as.numeric(lentry$xx)
-    masep <- mean(abs(utils::head(insample,-frq) - utils::tail(insample,-frq)))
-
-
-    repoutsample <- matrix(
-      rep(outsample, each=nrow(ff)),
-      nrow=nrow(ff))
-
-    smape_err <- 200*abs(ff - repoutsample) / (abs(ff) + abs(repoutsample))
-
-    mase_err <- abs(ff - repoutsample) / masep
-
-    lentry$snaive_mase <- mase_err[nrow(mase_err), ]
-    lentry$snaive_smape <- smape_err[nrow(smape_err),]
-
-    lentry$mase_err <- mase_err[-nrow(mase_err),]
-    lentry$smape_err <- smape_err[-nrow(smape_err),]
-    dataset[[i]] <- lentry
-    total_snaive_errors <- total_snaive_errors + c(mean(lentry$snaive_mase),
-                                                   mean(lentry$snaive_smape))
-    } , error = function (e) {
-      print(paste("Error when processing OWIs in series: ", i))
-      print(e)
-      e
+calc_errors <- function(dataset){
+    dataset <- lapply(dataset, function(lentry){
+        tryCatch({
+            ff <- lentry$ff
+            outsample <- as.numeric(lentry$xx)
+            if (all(outsample == 0))
+                return(NA)
+            lentry$errors <- rowMeans(abs(ff - outsample)/mean(outsample))
+        }, error = function(e) {
+            print(paste("Error when processing errors in series: ",
+                        i))
+            print(e)
+            e
+        })
+        lentry
     })
-  }
-  total_snaive_errors = total_snaive_errors / length(dataset)
-  avg_snaive_errors <- list(avg_mase=total_snaive_errors[1],
-                            avg_smape=total_snaive_errors[2])
-
-
-  for (i in 1:length(dataset)) {
-    lentry <- dataset[[i]]
-    dataset[[i]]$errors <- 0.5*(rowMeans(lentry$mase_err)/avg_snaive_errors$avg_mase +
-                                  rowMeans(lentry$smape_err)/avg_snaive_errors$avg_smape)
-    #dataset[[i]]$errors <- rowMeans(lentry$smape_err)
-  }
-  attr(dataset, "avg_snaive_errors") <- avg_snaive_errors
-  dataset
+    dataset[!is.na(dataset)]
 }
-
 
 
 ############################################################################
@@ -163,7 +181,7 @@ process_forecast_methods <- function(seriesdata, methods_list) {
   lapply(methods_list, function (mentry) {
     method_name <- mentry
     method_fun <- get(mentry)
-    forecasts <- tryCatch( method_fun(x=seriesdata$x, h=seriesdata$h),
+    forecasts <- tryCatch( method_fun(x=seriesdata$x, h=seriesdata$h, n=seriesdata$n),
                            error=function(error) {
                              print(error)
                              print(paste("ERROR processing series: ", seriesdata$st))
