@@ -8,9 +8,14 @@
 \title{Train Metalearning Models
 Trains a metalearning model by performing search on the hyperparameters}
 \usage{
-metatemp_train(train_dataset, eval_dataset, obj_fun = c("select",
-  "combi:smax_abs", "combi:smax_sq", "combi:square"),
-  filename = "meta_results.RData", verbose = FALSE, n.cores = 3)
+metatemp_train(
+  train_dataset,
+  eval_dataset,
+  obj_fun = c("select", "combi:smax_abs", "combi:smax_sq", "combi:square"),
+  filename = "meta_results.RData",
+  verbose = FALSE,
+  n.cores = 3
+)
 
 train_selection_ensemble(data, errors, param = NULL)
 
@@ -42,8 +47,7 @@ Can be the same as \code{train_dataset} to show training error}
 \item{data}{A matrix with the input features data (extracted from the series).
 One observation (the features from the original series) per row.}
 
-\item{errors}{A matrix with the errors produced by each of the forecasting methods.
-Each row is a vector with the errors of the forecasting methods.}
+\item{errors}{The NXM matrix with the erros per series and per method}
 
 \item{model}{The xgboost model}
 
@@ -55,10 +59,6 @@ and M the number of methods.}
 \item{dataset}{The list with the meta information, if given additional details will be provided}
 
 \item{print.summary}{Boolean indicating wheter to print the information}
-
-\item{labels}{A numeric vector from 0 to (nclass -1) with the targe labels for classification.}
-
-\item{errors}{The NXM matrix with the erros per series and per method}
 
 \item{labels}{Integer vector The true labels of the would be classification problem.
 Possible values are from 0 to M-1}
