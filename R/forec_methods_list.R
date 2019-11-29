@@ -88,3 +88,72 @@ thetaf_forec <- function(x, h) {
 }
 
 
+#' Make a rolling n-step forecast for a dataset in the format of the `FFORMA` format.
+#' @export
+rolling_forecast <- function(x, method, h=4, n=12){
+    sapply(seq(n, 1, -1), function(j){
+        train_dat <- utils::head(x, length(x)-(j+h)+1)
+        fcast <- method(train_dat, h)
+        return(fcast[h])
+    })
+}
+
+#' @export
+rolling_auto_arima <- function(x, h=4, n=12){
+    browser()
+    rolling_forecast(x, auto_arima_forec, h, n)
+}
+
+#' @export
+rolling_ets <- function(x, h=4, n=12){
+    rolling_forecast(x, ets_forec, h, n)
+}
+
+#' @export
+rolling_nnetar <- function(x, h=4, n=12){
+    rolling_forecast(x, nnetar_forec, h, n)
+}
+
+#' @export
+rolling_tbats <- function(x, h=4, n=12){
+    rolling_forecast(x, tbats_forec, h, n)
+}
+
+#' @export
+rolling_stlm_ar<- function(x, h=4, n=12){
+    rolling_forecast(x, stlm_ar_forec, h, n)
+}
+
+#' @export
+rolling_rw_drift <- function(x, h=4, n=12){
+    rolling_forecast(x, rw_drift_forec, h, n)
+}
+
+#' @export
+rolling_thetaf <- function(x, h=4, n=12){
+    rolling_forecast(x, thetaf_forec, h, n)
+}
+
+#' @export
+rolling_naive <- function(x, h=4, n=12){
+    rolling_forecast(x, naive_forec, h, n)
+}
+
+#' @export
+rolling_snaive <- function(x, h=4, n=12){
+    rolling_forecast(x, snaive_forec, h, n)
+}
+
+#' @export
+rolling_fc_methods <- function(){
+    list("rolling_auto_arima",
+         "rolling_ets",
+         "rolling_nnetar",
+         "rolling_tbats",
+         "rolling_stlm_ar",
+         "rolling_rw_drift",
+         "rolling_thetaf",
+         "rolling_naive",
+         "rolling_snaive"
+    )
+}
