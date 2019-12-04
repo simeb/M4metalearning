@@ -100,7 +100,6 @@ rolling_forecast <- function(x, method, h=4, n=12){
 
 #' @export
 rolling_auto_arima <- function(x, h=4, n=12){
-    browser()
     rolling_forecast(x, auto_arima_forec, h, n)
 }
 
