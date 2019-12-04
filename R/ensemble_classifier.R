@@ -102,7 +102,6 @@ create_feat_classif_problem <- function(dataset) {
 #'
 #' @export
 train_selection_ensemble <- function(data, errors, param=NULL) {
-
   check_customxgboost_version()
 
   dtrain <- xgboost::xgb.DMatrix(data)
@@ -115,9 +114,15 @@ train_selection_ensemble <- function(data, errors, param=NULL) {
                   subsample=0.9161483,
                   colsample_bytree=0.7670739
     )
+    nrounds <- 94
+  } else {
+      param$nthread <- 3
+      param$silent <- 1
+      param$objective <- error_softmax_obj
+      param$num_class <- ncol(errors)
+      nrounds <- param$nrounds
   }
-
-  bst <- xgboost::xgb.train(param, dtrain, 94)
+  bst <- xgboost::xgb.train(param, dtrain, nrounds)
   bst
 }
 
@@ -135,7 +140,7 @@ predict_selection_ensemble <- function(model, newdata) {
 #' @export
 ensemble_forecast <- function(predictions, dataset, clamp_zero=TRUE) {
   for (i in 1:length(dataset)) {
-    weighted_ff <- as.vector(t(predictions[i,]) %*% dataset[[i]]$ff)
+    weighted_ff <- as.vector(predictions[i,] %*% dataset[[i]]$ff)
     if (clamp_zero) {
       weighted_ff[weighted_ff < 0] <- 0
     }
@@ -176,7 +181,7 @@ summary_performance <- function(predictions, dataset, print.summary = TRUE) {
   #calculate the weighted prediction
 
     for (i in 1:length(dataset)) {
-      weighted_ff <- t(predictions[i,]) %*% dataset[[i]]$ff
+      weighted_ff <- predictions[i,] %*% dataset[[i]]$ff
       naive_combi_ff <- colMeans(dataset[[i]]$ff)
       selected_ff <- dataset[[i]]$ff[max_predictions[i]+1,]
       oracle_ff <- dataset[[i]]$ff[labels[i]+1,]
