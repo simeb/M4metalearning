@@ -40,8 +40,8 @@ hyperparameter_search <- function(dataset, filename="meta_hyper.RData", n_iter=1
       attr(dtrain, "errors") <- train_feat[[i]]$errors
 
       bst <- xgboost::xgb.train(param, dtrain, nrounds)
-      preds <- M4metalearning::predict_selection_ensemble(bst, test_feat[[i]]$data)
-      er <- M4metalearning::summary_performance(preds,
+      preds <- predict_selection_ensemble(bst, test_feat[[i]]$data)
+      er <- summary_performance(preds,
                                                 test_ds[[i]],
                                                 print.summary = FALSE)
 
